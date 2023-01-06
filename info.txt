@@ -1,0 +1,142 @@
+I want my django app to send info some frontend when an event occures (like object being created)
+Is there a way to do that?
+
+Yes, there are several ways you can send information from your Django app to the frontend when an event occurs. One option is to use WebSockets, which allow you to establish a persistent connection between the backend and the frontend and send messages in real-time.
+
+To implement WebSockets in Django, you can use a library like Django Channels. This library provides support for WebSockets and other asyncio-based communication channels, and allows you to easily handle real-time events in your Django application.
+
+Here is a basic example of how you might use Django Channels to send a message to the frontend when an object is created:
+
+    Install Django Channels and add it to your Django project.
+
+    In your Django app, create a consumer class that will handle the WebSocket connection and receive messages from the frontend. This class should subclass AsyncWebsocketConsumer and define the connect, disconnect, and receive methods.
+
+    In your Django app, create a routing configuration that maps a URL pattern to the consumer class you just created. This will allow you to connect to the WebSocket from the frontend.
+
+    In your frontend code, use JavaScript to create a WebSocket connection to the URL specified in the routing configuration. You can then send and receive messages using the WebSocket API.
+
+    In your Django app, when an event occurs that you want to send to the frontend (such as an object being created), use the send method of the consumer class to send a message over the WebSocket connection.
+
+I hope this helps! Let me know if you have any questions.
+Antoine Marquis (羊神)
+Can you show me the complete code to implement that?
+
+Certainly! Here is an example of how you can use Django Channels to send a message to the frontend when an object is created:
+
+First, install Django Channels and add it to your Django project:
+
+pip install channels
+
+In your Django app, create a consumer class that will handle the WebSocket connection and receive messages from the frontend. This class should subclass AsyncWebsocketConsumer and define the connect, disconnect, and receive methods:
+
+from channels.generic.websocket import AsyncWebsocketConsumer
+
+class ObjectConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        # Do any setup you need here before the connection is established
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        # Do any cleanup you need here when the connection is closed
+        pass
+
+    async def receive(self, text_data=None, bytes_data=None):
+        # This method is called when the frontend sends a message
+        # You can use it to send a message back to the frontend
+        await self.send(text_data="Hello from the backend!")
+
+In your Django app, create a routing configuration that maps a URL pattern to the consumer class you just created. This will allow you to connect to the WebSocket from the frontend:
+
+from django.urls import path
+from . import consumers
+
+websocket_urlpatterns = [
+    path('ws/objects/', consumers.ObjectConsumer.as_asgi()),
+]
+
+In your frontend code, use JavaScript to create a WebSocket connection to the URL specified in the routing configuration. You can then send and receive messages using the WebSocket API:
+
+const socket = new WebSocket("ws://example.com/ws/objects/");
+
+socket.onopen = function(event) {
+  // Connection is open, send a message
+  socket.send("Hello from the frontend!");
+};
+
+socket.onmessage = function(event) {
+  console.log("Received message:", event.data);
+};
+
+In your Django app, when an event occurs that you want to send to the frontend (such as an object being created), use the send method of the consumer class to send a message over the WebSocket connection:
+
+from .consumers import ObjectConsumer
+
+def create_object(request):
+    # Create the object here
+    ObjectConsumer.send("A new object was created!")
+
+I hope this helps! Let me know if you have any questions.
+Antoine Marquis (羊神)
+Can you show the code on the frontend using angular?
+2 / 2
+
+Certainly! Here is an example of how you can use Angular to create a WebSocket connection to a Django Channels consumer and send and receive messages:
+
+First, install the @stomp/ng2-stompjs library, which provides a simple API for working with WebSockets in Angular:
+
+npm install @stomp/ng2-stompjs
+
+In your Angular component or service, inject the StompService and use it to create a WebSocket connection to the Django Channels consumer:
+
+import { StompService } from '@stomp/ng2-stompjs';
+
+export class MyComponent {
+  constructor(private stompService: StompService) {
+    this.stompService.config = {
+      // URL of the Django Channels consumer
+      url: 'ws://example.com/ws/objects/',
+      // Headers to pass along with the connection request
+      headers: {},
+      // How often to heartbeat?
+      // Interval in milliseconds, set to 0 to disable
+      heartbeat_in: 0,
+      // Typical value 0 - disabled
+      heartbeat_out: 20000,
+      // Typical value 20000 - every 20 seconds
+      // Wait in milliseconds before attempting auto reconnect
+      // Set to 0 to disable
+      // Typical value 500 (500 milli seconds)
+      reconnect_delay: 500,
+      // Will log diagnostics on console
+      debug: true
+    };
+
+    this.stompService.initAndConnect();
+  }
+}
+
+To send a message to the Django Channels consumer, use the send method of the StompService:
+
+import { Message } from '@stomp/stompjs';
+
+export class MyComponent {
+  sendMessage() {
+    // Send a message to the Django Channels consumer
+    this.stompService.publish(
+      '/app/message',
+      JSON.stringify({ text: 'Hello from the frontend!' })
+    );
+  }
+}
+
+To receive messages from the Django Channels consumer, use the subscribe method of the StompService:
+
+export class MyComponent {
+  ngOnInit() {
+    this.stompService.subscribe('/topic/messages').subscribe((message: Message) => {
+      console.log('Received message:', message.body);
+    });
+  }
+}
+
+I hope this helps! Let me know if you have any questions.

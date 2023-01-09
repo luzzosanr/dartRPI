@@ -5,6 +5,7 @@ from rest_framework.decorators import api_view
 
 @api_view(['GET'])
 def add_shot(request):
+    print(request.GET['gpio'])
     shot = Shot(request.GET['gpio'])
     return Response({"points" : shot.points})
 

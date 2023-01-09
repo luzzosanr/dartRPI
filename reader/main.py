@@ -61,7 +61,8 @@ def touch(gpio_in, gpio_out):
             multiple = 1
 
     print("onDartTargetTouch: ", multiple, value)
-    requests.get(f"http://192.168.43.113/add_shot/?gpio={multiple}{value}")
+    requests.get(f"http://192.168.43.113:8000/add_shot/?gpio={value}{multiple}")
+    #requests.get(f"http://localhost/add_shot/?gpio={multiple}{value}")
     time.sleep(0.8)
 
 
